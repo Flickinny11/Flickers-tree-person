@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouthful - Lip Reading with Voice Cloning</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 1.2em;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #4a5568;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        input[type="file"], input[type="text"], input[type="url"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="file"]:focus, input[type="text"]:focus, input[type="url"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+        
+        .status.info {
+            background: #bee3f8;
+            color: #2a4365;
+            border: 1px solid #63b3ed;
+        }
+        
+        .results {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .person-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .person-card h4 {
+            margin: 0 0 10px 0;
+            color: #4a5568;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        .badge.voice-trained {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .badge.no-voice {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗣️ Mouthful</h1>
+            <p>AI-Powered Lip Reading with Voice Cloning</p>
+        </div>
+
+        <div class="grid">
+            <!-- Video Processing Section -->
+            <div class="section">
+                <h2>📹 Process Video</h2>
+                <div class="form-group">
+                    <label for="videoFile">Upload Video File:</label>
+                    <input type="file" id="videoFile" accept="video/*">
+                </div>
+                <button onclick="uploadVideo()" id="uploadBtn">Upload & Process</button>
+                <div id="videoStatus"></div>
+                <div id="videoProgress" class="progress-bar" style="display: none;">
+                    <div class="progress-fill" id="videoProgressFill"></div>
+                </div>
+                <div id="videoResults" class="results" style="display: none;"></div>
+            </div>
+
+            <!-- Live Stream Section -->
+            <div class="section">
+                <h2>📡 Live Stream Processing</h2>
+                <div class="form-group">
+                    <label for="streamUrl">Stream URL:</label>
+                    <input type="url" id="streamUrl" placeholder="rtmp://example.com/live/stream">
+                </div>
+                <div class="form-group">
+                    <label for="delaySeconds">Processing Delay (seconds):</label>
+                    <input type="number" id="delaySeconds" value="180" min="60" max="600">
+                </div>
+                <button onclick="startLiveStream()" id="liveBtn">Start Live Processing</button>
+                <button onclick="stopLiveStream()" id="stopBtn" disabled>Stop Processing</button>
+                <div id="liveStatus"></div>
+            </div>
+
+            <!-- Add Person Section -->
+            <div class="section">
+                <h2>👤 Add Person</h2>
+                <div class="form-group">
+                    <label for="personName">Person Name:</label>
+                    <input type="text" id="personName" placeholder="Enter person's name">
+                </div>
+                <div class="form-group">
+                    <label for="personImages">Face Images:</label>
+                    <input type="file" id="personImages" multiple accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="personAudio">Audio Samples (optional):</label>
+                    <input type="file" id="personAudio" multiple accept="audio/*">
+                </div>
+                <button onclick="addPerson()" id="addPersonBtn">Add Person</button>
+                <div id="addPersonStatus"></div>
+            </div>
+
+            <!-- Voice Synthesis Section -->
+            <div class="section">
+                <h2>🔊 Voice Synthesis</h2>
+                <div class="form-group">
+                    <label for="synthPersonSelect">Select Person:</label>
+                    <select id="synthPersonSelect">
+                        <option value="">Select a person...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="synthText">Text to Synthesize:</label>
+                    <textarea id="synthText" rows="3" placeholder="Enter text to synthesize..."></textarea>
+                </div>
+                <button onclick="synthesizeSpeech()" id="synthBtn">Synthesize Speech</button>
+                <div id="synthStatus"></div>
+                <audio id="synthAudio" controls style="width: 100%; margin-top: 15px; display: none;"></audio>
+            </div>
+
+            <!-- Persons List Section -->
+            <div class="section">
+                <h2>👥 Known Persons</h2>
+                <button onclick="loadPersons()">Refresh List</button>
+                <div id="personsList"></div>
+            </div>
+
+            <!-- System Stats Section -->
+            <div class="section">
+                <h2>📊 System Statistics</h2>
+                <button onclick="loadStats()">Refresh Stats</button>
+                <div id="systemStats"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        // Utility functions
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function clearStatus(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        // Video processing
+        async function uploadVideo() {
+            const fileInput = document.getElementById('videoFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('videoStatus', 'Please select a video file', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            document.getElementById('uploadBtn').disabled = true;
+            showStatus('videoStatus', 'Uploading video...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/upload/video`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('videoStatus', `Video uploaded successfully. Task ID: ${result.task_id}`, 'success');
+                    monitorVideoProcessing(result.task_id);
+                } else {
+                    showStatus('videoStatus', `Error: ${result.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('videoStatus', `Upload failed: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        }
+        
+        async function monitorVideoProcessing(taskId) {
+            const progressBar = document.getElementById('videoProgress');
+            const progressFill = document.getElementById('videoProgressFill');
+            const resultsDiv = document.getElementById('videoResults');
+            
+            progressBar.style.display = 'block';
+            
+            const checkProgress = async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/process/status/${taskId}`);
+                    const status = await response.json();
+                    
+                    progressFill.style.width = `${status.progress * 100}%`;
+                    
+                    if (status.status === 'completed') {
+                        showStatus('videoStatus', 'Video processing completed!', 'success');
+                        displayVideoResults(status.results);
+                        progressBar.style.display = 'none';
+                    } else if (status.status === 'failed') {
+                        showStatus('videoStatus', `Processing failed: ${status.error}`, 'error');
+                        progressBar.style.display = 'none';
+                    } else {
+                        setTimeout(checkProgress, 2000);
+                    }
+                } catch (error) {
+                    showStatus('videoStatus', `Error checking progress: ${error.message}`, 'error');
+                    progressBar.style.display = 'none';
+                }
+            };
+            
+            checkProgress();
+        }
+        
+        function displayVideoResults(results) {
+            const resultsDiv = document.getElementById('videoResults');
+            
+            if (!results || results.length === 0) {
+                resultsDiv.innerHTML = '<p>No results found.</p>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+            
+            let html = '<h3>Processing Results:</h3>';
+            
+            results.slice(0, 10).forEach((result, index) => {
+                html += `
+                    <div style="border-bottom: 1px solid #e2e8f0; padding: 10px 0;">
+                        <strong>Frame ${index} (${result.timestamp.toFixed(2)}s):</strong><br>
+                        Faces: ${result.detected_faces.length}, 
+                        Lip readings: ${result.lip_reading_results.length}, 
+                        Processing time: ${result.processing_time.toFixed(3)}s
+                `;
+                
+                if (result.detected_faces.length > 0) {
+                    html += '<br><em>Detected faces:</em><ul>';
+                    result.detected_faces.forEach(face => {
+                        html += `<li>${face.name || face.person_id} (${face.confidence.toFixed(2)})</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                if (result.lip_reading_results.length > 0) {
+                    html += '<br><em>Lip reading:</em><ul>';
+                    result.lip_reading_results.forEach(([word, confidence]) => {
+                        html += `<li>"${word}" (${confidence.toFixed(2)})</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                html += '</div>';
+            });
+            
+            if (results.length > 10) {
+                html += `<p><em>... and ${results.length - 10} more results</em></p>`;
+            }
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+
+        // Live stream processing
+        async function startLiveStream() {
+            const streamUrl = document.getElementById('streamUrl').value;
+            const delaySeconds = parseInt(document.getElementById('delaySeconds').value);
+            
+            if (!streamUrl) {
+                showStatus('liveStatus', 'Please enter a stream URL', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/process/live`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        video_url: streamUrl,
+                        delay_seconds: delaySeconds
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('liveStatus', `Live processing started with ${delaySeconds}s delay`, 'success');
+                    document.getElementById('liveBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                } else {
+                    showStatus('liveStatus', `Error: ${result.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('liveStatus', `Failed to start live processing: ${error.message}`, 'error');
+            }
+        }
+        
+        async function stopLiveStream() {
+            try {
+                const response = await fetch(`${API_BASE}/process/live/stop`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('liveStatus', 'Live processing stopped', 'info');
+                    document.getElementById('liveBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                } else {
+                    showStatus('liveStatus', `Error: ${result.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('liveStatus', `Failed to stop live processing: ${error.message}`, 'error');
+            }
+        }
+
+        // Add person
+        async function addPerson() {
+            const name = document.getElementById('personName').value;
+            const images = document.getElementById('personImages').files;
+            const audioFiles = document.getElementById('personAudio').files;
+            
+            if (!name || images.length === 0) {
+                showStatus('addPersonStatus', 'Please enter a name and select at least one image', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('name', name);
+            
+            for (let i = 0; i < images.length; i++) {
+                formData.append('images', images[i]);
+            }
+            
+            for (let i = 0; i < audioFiles.length; i++) {
+                formData.append('audio_files', audioFiles[i]);
+            }
+            
+            document.getElementById('addPersonBtn').disabled = true;
+            showStatus('addPersonStatus', 'Adding person...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/persons/add`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('addPersonStatus', `Person "${result.name}" added successfully!`, 'success');
+                    document.getElementById('personName').value = '';
+                    document.getElementById('personImages').value = '';
+                    document.getElementById('personAudio').value = '';
+                    loadPersons(); // Refresh the persons list
+                    loadSynthPersons(); // Refresh synthesis dropdown
+                } else {
+                    showStatus('addPersonStatus', `Error: ${result.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('addPersonStatus', `Failed to add person: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('addPersonBtn').disabled = false;
+            }
+        }
+
+        // Voice synthesis
+        async function synthesizeSpeech() {
+            const personSelect = document.getElementById('synthPersonSelect');
+            const text = document.getElementById('synthText').value;
+            
+            if (!personSelect.value || !text) {
+                showStatus('synthStatus', 'Please select a person and enter text', 'error');
+                return;
+            }
+            
+            document.getElementById('synthBtn').disabled = true;
+            showStatus('synthStatus', 'Synthesizing speech...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/synthesize/${personSelect.value}?text=${encodeURIComponent(text)}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    const audioElement = document.getElementById('synthAudio');
+                    audioElement.src = audioUrl;
+                    audioElement.style.display = 'block';
+                    
+                    showStatus('synthStatus', 'Speech synthesized successfully!', 'success');
+                } else {
+                    const result = await response.json();
+                    showStatus('synthStatus', `Error: ${result.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('synthStatus', `Synthesis failed: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('synthBtn').disabled = false;
+            }
+        }
+
+        // Load persons list
+        async function loadPersons() {
+            try {
+                const response = await fetch(`${API_BASE}/persons`);
+                const result = await response.json();
+                
+                const personsList = document.getElementById('personsList');
+                
+                if (response.ok && result.persons.length > 0) {
+                    let html = `<p><strong>Total persons: ${result.total_persons}</strong></p>`;
+                    
+                    result.persons.forEach(person => {
+                        const voiceBadge = person.voice_trained 
+                            ? '<span class="badge voice-trained">Voice Trained</span>'
+                            : '<span class="badge no-voice">No Voice</span>';
+                        
+                        html += `
+                            <div class="person-card">
+                                <h4>${person.name}</h4>
+                                <p>ID: ${person.person_id}</p>
+                                <p>Confidence: ${person.confidence.toFixed(2)}</p>
+                                ${voiceBadge}
+                            </div>
+                        `;
+                    });
+                    
+                    personsList.innerHTML = html;
+                } else {
+                    personsList.innerHTML = '<p>No persons found.</p>';
+                }
+            } catch (error) {
+                document.getElementById('personsList').innerHTML = `<p class="status error">Error loading persons: ${error.message}</p>`;
+            }
+        }
+
+        // Load persons for synthesis dropdown
+        async function loadSynthPersons() {
+            try {
+                const response = await fetch(`${API_BASE}/persons`);
+                const result = await response.json();
+                
+                const select = document.getElementById('synthPersonSelect');
+                select.innerHTML = '<option value="">Select a person...</option>';
+                
+                if (response.ok) {
+                    result.persons.filter(p => p.voice_trained).forEach(person => {
+                        const option = document.createElement('option');
+                        option.value = person.person_id;
+                        option.textContent = person.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading synthesis persons:', error);
+            }
+        }
+
+        // Load system statistics
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                const stats = await response.json();
+                
+                const statsDiv = document.getElementById('systemStats');
+                
+                if (response.ok) {
+                    let html = '<div class="results">';
+                    
+                    Object.entries(stats).forEach(([key, value]) => {
+                        if (typeof value === 'object') {
+                            html += `<h4>${key}:</h4><ul>`;
+                            Object.entries(value).forEach(([subKey, subValue]) => {
+                                html += `<li>${subKey}: ${subValue}</li>`;
+                            });
+                            html += '</ul>';
+                        } else {
+                            html += `<p><strong>${key}:</strong> ${value}</p>`;
+                        }
+                    });
+                    
+                    html += '</div>';
+                    statsDiv.innerHTML = html;
+                } else {
+                    statsDiv.innerHTML = '<p class="status error">Error loading statistics</p>';
+                }
+            } catch (error) {
+                document.getElementById('systemStats').innerHTML = `<p class="status error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPersons();
+            loadSynthPersons();
+            loadStats();
+        });
+    </script>
+</body>
+</html>
