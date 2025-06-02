@@ -1,0 +1,10 @@
+App name: "Mouthful"
+
+App description:
+
+Mouthful is a service that uses several open source tools to ultimately provide lip-reading with live voice support, that will find and clone the voice
+of the persons spewking in the video. Once the video focuses on a person/s, an open source biometric face scan tool identifies all persons in the frame by using their biometrics and scanning social medi profiles and online area their face may be
+available jntil finding a match to identify them. Then, searching to find any audio available for the persons and upon finding audio, clones their voice. Once cloned, the live lip reading service uses the cloned voice for the persons to provide a clear 
+and understandable and accurate cloned ai voice that is "live" to the viewer. If the video is actually of a live event, the live feed is delayed to allow for the process, which should take approximstely 3-5 mins. The existing open wource lip reading service 
+should be integrated and the open source biometric scanner thr uses social medi should also be integrated. A tool that uses the users identity to search all possible audio sources needs to be either integrwted if it exista or created if not using a web crawler.
+
