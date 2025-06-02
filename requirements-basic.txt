@@ -1,0 +1,20 @@
+# Basic requirements for core functionality
+numpy>=1.21.0
+opencv-python>=4.8.0
+Pillow>=9.0.0
+requests>=2.28.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+python-multipart>=0.0.6
+scipy>=1.9.0
+
+# Audio processing (lighter alternatives)
+soundfile>=0.12.0
+
+# Optional deep learning (can be installed later)
+# torch>=2.0.0
+# torchvision>=0.15.0
+# torchaudio>=2.0.0
+# transformers>=4.30.0
+# librosa>=0.10.0

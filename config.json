@@ -1,0 +1,54 @@
+{
+  "models": {
+    "face_recognition": {
+      "model": "hog",
+      "tolerance": 0.6,
+      "model_location": "models/face_recognition"
+    },
+    "lip_reading": {
+      "model_path": "models/lip_reading/model.pth",
+      "model_type": "temporal_cnn",
+      "confidence_threshold": 0.7
+    },
+    "voice_cloning": {
+      "model_path": "models/voice_cloning",
+      "synthesizer_path": "models/voice_cloning/synthesizer.pt",
+      "vocoder_path": "models/voice_cloning/vocoder.pt",
+      "encoder_path": "models/voice_cloning/encoder.pt"
+    }
+  },
+  "processing": {
+    "video_fps": 25,
+    "audio_sample_rate": 22050,
+    "max_face_distance": 0.6,
+    "min_audio_duration": 5.0,
+    "processing_delay": 180,
+    "batch_size": 32
+  },
+  "crawling": {
+    "max_search_results": 50,
+    "max_audio_samples": 10,
+    "timeout_seconds": 30,
+    "user_agents": [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    ]
+  },
+  "social_media": {
+    "platforms": ["twitter", "facebook", "instagram", "linkedin"],
+    "max_profiles_per_platform": 5,
+    "confidence_threshold": 0.8
+  },
+  "api": {
+    "host": "0.0.0.0",
+    "port": 8000,
+    "debug": false,
+    "max_file_size": 104857600
+  },
+  "storage": {
+    "temp_dir": "temp",
+    "output_dir": "output",
+    "models_dir": "models",
+    "cache_dir": "cache"
+  }
+}
